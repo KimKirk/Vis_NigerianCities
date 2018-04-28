@@ -1,0 +1,109 @@
+Nigerian Cities Shiny App
+========================================================
+author: Kim Kirk
+date: 4/28/2018 
+autosize: true
+
+How it Works
+========================================================
+This visualisation shows the population for various Nigerian cities, using data taken from Wikipedia. 
+
+Use the dropdown menu to choose one or more of the cities for which you wish to see population data. To remove a city from the barplot, use your cursor to click on the city name and press the "Del" or "Backspace" button; the graph will adjust to show only those cities chosen.
+
+Creating UI Elements
+========================================================
+Documentation is listed on the website to faciliate ease of use. The dropdown menu allows for up to seven Nigerian cities to be chosen for the barplot. Here's the code:
+
+```{r, eval=FALSE, echo = TRUE}
+import shiny package
+require(shiny)
+
+create UI elements for dropdown menu and items, and barplot
+ui <- fluidPage(
+titlePanel("Nigerian Cities by Population"),
+
+mainPanel(
+textOutput("documentation"),
+selectInput("choice", "Choose your cities", nigerianCities$city, multiple = TRUE),
+plotOutput("barplot")
+)
+)
+```
+
+Creating Server Elements
+========================================================
+Server elements take input from the UI and update the UI elements on screen in real time. Here's the code:
+
+```{r, eval=FALSE,echo = TRUE}
+create output that responds to input changes from UI for barplot
+server <- function(input, output) {
+    output$documentation <-
+    renderText({
+    paste(
+    "This visualisation shows the population for various Nigerian cities, using data taken from Wikipedia. Use the dropdown menu to choose one or more of the cities for which you wish to see population data. To remove a city from the barplot, use your cursor to click on the city name and press the Del or Backspace button; the graph will adjust to show only those cities chosen."
+    )
+    })
+    
+    output$barplot <- renderPlot({
+    barplot(
+    nigerianCities$population[nigerianCities$city %in% input$choice],
+    col = rainbow(20),
+    names.arg = nigerianCities[nigerianCities$city %in% input$choice, 1],
+    ylab = "Population",
+    main = "Comparison of the Population of Nigerian Cities",
+    space = 0,
+    xlim = c(0, 7),
+    ylim = c(0, max(nigerianCities$population))
+    )
+    
+    })
+    
+    
+    }
+```
+
+Final Shiny App
+========================================================
+The UI and Server code works together to create the final shiny app.
+
+```{r, echo=FALSE}
+#import shiny package
+require(shiny)
+
+nigerianCities <- data.frame(city = c("Abuja","Benin City", "Enugu", "Ibadan","Kano", "Lagos", "Port Harcourt"),
+                             population = c(776298, 1495800, 3267837, 3034200, 9383682, 9013534, 1865000), 
+                             latitude = c(9.066667, 6.333333, 6.452667, 7.396389, 12, 6.455027, 4.824167), 
+                             longitude = c(7.483333, 5.622222, 7.510333, 3.916667, 8.516667, 3.384082, 7.033611) 
+)
+
+#create UI elements for dropdown menu and items, and barplot
+ui <- fluidPage(titlePanel("Nigerian Cities by Population"),
+                
+                mainPanel(
+                    textOutput("documentation"),
+                    selectInput("choice", "Choose your cities", nigerianCities$city, multiple = TRUE),
+                    plotOutput("barplot")
+                ))
+
+
+#create output that responds to input changes from UI for barplot
+server <- function(input, output) { 
+    
+    output$documentation <- renderText({paste("This visualisation shows the population for various Nigerian cities, using data taken from Wikipedia. Use the dropdown menu to choose one or more of the cities for which you wish to see population data. To remove a city from the barplot, use your cursor to click on the city name and press the Del or Backspace button; the graph will adjust to show only those cities chosen.")})
+    
+    output$barplot <- renderPlot({
+
+        barplot(nigerianCities$population[nigerianCities$city %in% input$choice], col = rainbow(20),
+           names.arg = nigerianCities[nigerianCities$city %in% input$choice,1],
+           ylab = "Population",  main = "Comparison of the Population of Nigerian Cities", space = 0, xlim= c(0, 7), ylim = c(0,max(nigerianCities$population)))
+
+        })
+
+    
+}
+
+
+
+shinyApp(ui, server)
+
+```
